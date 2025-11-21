@@ -4,7 +4,7 @@ import { VitePWA } from 'vite-plugin-pwa'
 import path from 'path'
 
 export default defineConfig({
-  base: process.env.NODE_ENV === 'production' ? '/tehnoprokat/' : '/','
+  base: process.env.NODE_ENV === 'production' ? '/tehnoprokat/' : '/',
   server: {
     host: '0.0.0.0',
     port: 5173,

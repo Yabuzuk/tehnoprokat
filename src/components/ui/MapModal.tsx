@@ -12,7 +12,7 @@ interface MapModalProps {
 export function MapModal({ isOpen, onClose, onAddressSelect, initialCoordinates }: MapModalProps) {
   const mapRef = useRef<HTMLDivElement>(null)
   const [map, setMap] = useState<any>(null)
-  const [placemark, setPlacemark] = useState<any>(null)
+
   const [selectedAddress, setSelectedAddress] = useState('')
 
 

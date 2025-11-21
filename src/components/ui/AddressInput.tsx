@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useRef } from 'react'
 import { MapPin } from 'lucide-react'
 import { Button } from './Button'
 import { Input } from './Input'
@@ -19,7 +19,7 @@ declare global {
 export function AddressInput({ value, onChange, error, onMapClick }: AddressInputProps) {
   const [suggestions, setSuggestions] = useState<any[]>([])
   const [showSuggestions, setShowSuggestions] = useState(false)
-  const suggestRef = useRef<any>(null)
+
 
 
 
