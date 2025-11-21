@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
+import { useNotifications } from '@/hooks/useNotifications'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
@@ -17,13 +18,15 @@ export function CreateOrder() {
   const navigate = useNavigate()
   const { setCurrentOrder } = useOrderStore()
   const createOrderMutation = useCreateOrder()
+  const { requestPermission, notifyOrderCreated } = useNotifications()
 
   useEffect(() => {
     if (createOrderMutation.isSuccess) {
+      notifyOrderCreated(formData.service_type)
       alert('Заказ успешно оформлен!')
       navigate('/user/dashboard')
     }
-  }, [createOrderMutation.isSuccess, navigate])
+  }, [createOrderMutation.isSuccess, navigate, notifyOrderCreated, formData.service_type])
 
   const [formData, setFormData] = useState<CreateOrderData>({
     service_type: serviceType as ServiceType,
@@ -43,7 +46,9 @@ export function CreateOrder() {
     if (!service) {
       navigate('/user/dashboard')
     }
-  }, [service, navigate])
+    // Запрашиваем разрешение на уведомления
+    requestPermission()
+  }, [service, navigate, requestPermission])
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()

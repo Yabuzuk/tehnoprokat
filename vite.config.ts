@@ -24,11 +24,25 @@ export default defineConfig({
         theme_color: '#3b82f6',
         background_color: '#ffffff',
         display: 'standalone',
+        start_url: '/tehnoprokat/',
+        scope: '/tehnoprokat/',
+        orientation: 'portrait',
         icons: [
           {
             src: 'water.png',
             sizes: '192x192',
-            type: 'image/png'
+            type: 'image/png',
+            purpose: 'any maskable'
+          }
+        ],
+        categories: ['utilities', 'business'],
+        shortcuts: [
+          {
+            name: 'Заказать воду',
+            short_name: 'Вода',
+            description: 'Быстрый заказ доставки воды',
+            url: '/tehnoprokat/user/order/water_delivery',
+            icons: [{ src: 'water.png', sizes: '96x96' }]
           }
         ]
       }
