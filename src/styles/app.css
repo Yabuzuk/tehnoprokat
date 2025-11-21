@@ -1,22 +1,53 @@
-/* Скрытие элементов браузера для полноэкранного режима */
-@media (display-mode: fullscreen) {
+/* Принудительное скрытие всех элементов браузера */
+html, body {
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow-x: hidden !important;
+  -webkit-user-select: none !important;
+  -webkit-touch-callout: none !important;
+  -webkit-tap-highlight-color: transparent !important;
+}
+
+/* Скрытие возможных элементов WebView */
+.webview-header,
+.webview-toolbar,
+.browser-header,
+.address-bar,
+[class*="header"],
+[class*="toolbar"],
+[class*="address"] {
+  display: none !important;
+  visibility: hidden !important;
+  height: 0 !important;
+  opacity: 0 !important;
+}
+
+/* Полноэкранный режим */
+@media (display-mode: fullscreen),
+       (display-mode: standalone) {
   body {
     padding-top: 0 !important;
     margin-top: 0 !important;
   }
 }
 
-@media (display-mode: standalone) {
-  body {
-    padding-top: 0 !important;
-    margin-top: 0 !important;
-  }
-}
-
-/* Для Android WebView */
+/* Для Android */
 @supports (padding: max(0px)) {
   body {
     padding-top: max(0px, env(safe-area-inset-top));
     padding-bottom: max(0px, env(safe-area-inset-bottom));
   }
+}
+
+/* Принудительное скрытие для TWA */
+body::before {
+  content: '';
+  position: fixed;
+  top: -100px;
+  left: 0;
+  right: 0;
+  height: 100px;
+  background: #3b82f6;
+  z-index: 9999;
+  pointer-events: none;
 }
