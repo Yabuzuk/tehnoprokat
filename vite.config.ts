@@ -23,9 +23,10 @@ export default defineConfig({
         description: 'Заказ услуг доставки воды и откачки септика',
         theme_color: '#3b82f6',
         background_color: '#ffffff',
-        display: 'standalone',
+        display: 'fullscreen',
         start_url: '/tehnoprokat/',
         scope: '/tehnoprokat/',
+        display_override: ['fullscreen', 'standalone', 'minimal-ui'],
         orientation: 'portrait',
         icons: [
           {
