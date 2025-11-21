@@ -26,9 +26,9 @@ export default defineConfig({
         display: 'standalone',
         icons: [
           {
-            src: 'vite.svg',
+            src: 'water.png',
             sizes: '192x192',
-            type: 'image/svg+xml'
+            type: 'image/png'
           }
         ]
       }
