@@ -89,10 +89,7 @@ export class NotificationService {
         badge: '/tehnoprokat/water.png',
         tag: tag || 'background',
         requireInteraction: true,
-        actions: [
-          { action: 'open', title: 'Открыть' },
-          { action: 'close', title: 'Закрыть' }
-        ]
+        data: { url: '/tehnoprokat/' }
       })
     }
   }
