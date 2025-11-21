@@ -2,12 +2,25 @@
 
 export class NotificationService {
   private static instance: NotificationService
+  private registration: ServiceWorkerRegistration | null = null
   
   static getInstance(): NotificationService {
     if (!NotificationService.instance) {
       NotificationService.instance = new NotificationService()
     }
     return NotificationService.instance
+  }
+
+  // Инициализация Service Worker
+  async init() {
+    if ('serviceWorker' in navigator) {
+      try {
+        this.registration = await navigator.serviceWorker.register('/tehnoprokat/sw.js')
+        console.log('Service Worker зарегистрирован')
+      } catch (error) {
+        console.error('Ошибка регистрации Service Worker:', error)
+      }
+    }
   }
 
   // Запрос разрешения на уведомления
@@ -17,6 +30,7 @@ export class NotificationService {
       return false
     }
 
+    await this.init()
     const permission = await Notification.requestPermission()
     return permission === 'granted'
   }
@@ -65,6 +79,26 @@ export class NotificationService {
       tag: 'new-order'
     })
   }
+
+  // Отправка фонового уведомления через Service Worker
+  async sendBackgroundNotification(title: string, body: string, tag?: string) {
+    if (this.registration && 'showNotification' in this.registration) {
+      await this.registration.showNotification(title, {
+        body,
+        icon: '/tehnoprokat/water.png',
+        badge: '/tehnoprokat/water.png',
+        tag: tag || 'background',
+        requireInteraction: true,
+        actions: [
+          { action: 'open', title: 'Открыть' },
+          { action: 'close', title: 'Закрыть' }
+        ]
+      })
+    }
+  }
 }
 
 export const notificationService = NotificationService.getInstance()
+
+// Автоинициализация
+notificationService.init()
