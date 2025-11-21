@@ -22,11 +22,11 @@ export function CreateOrder() {
 
   useEffect(() => {
     if (createOrderMutation.isSuccess) {
-      notifyOrderCreated(formData.service_type)
+      notifyOrderCreated(serviceType as string)
       alert('Заказ успешно оформлен!')
       navigate('/user/dashboard')
     }
-  }, [createOrderMutation.isSuccess, navigate, notifyOrderCreated, formData.service_type])
+  }, [createOrderMutation.isSuccess, navigate, notifyOrderCreated, serviceType])
 
   const [formData, setFormData] = useState<CreateOrderData>({
     service_type: serviceType as ServiceType,
