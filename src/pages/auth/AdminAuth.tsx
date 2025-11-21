@@ -23,7 +23,15 @@ export function AdminAuth() {
 
     // Простая проверка админских данных (в реальном проекте должна быть через API)
     if (credentials.username === 'admin' && credentials.password === 'admin123') {
-      setRole('admin')
+      // Создаем фиктивного админа
+      const adminUser = {
+        id: 'admin-id',
+        name: 'Администратор',
+        phone: '+79999999999',
+        created_at: new Date().toISOString()
+      }
+      useAuthStore.getState().setUser(adminUser)
+      useAuthStore.getState().setRole('admin')
       navigate('/admin/dashboard')
     } else {
       setError('Неверные учетные данные')
