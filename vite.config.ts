@@ -33,7 +33,19 @@ export default defineConfig({
             src: 'water.png',
             sizes: '192x192',
             type: 'image/png',
-            purpose: 'any maskable'
+            purpose: 'any'
+          },
+          {
+            src: 'water.png',
+            sizes: '512x512',
+            type: 'image/png',
+            purpose: 'maskable'
+          },
+          {
+            src: 'water.png',
+            sizes: '512x512',
+            type: 'image/png',
+            purpose: 'monochrome'
           }
         ],
         categories: ['utilities', 'business'],
