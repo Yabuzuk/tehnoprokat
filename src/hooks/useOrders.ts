@@ -1,11 +1,25 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useEffect } from 'react'
 import { ordersApi } from '@/services/api'
 import { useAuthStore } from '@/stores/authStore'
 import { useOrderStore } from '@/stores/orderStore'
+import { supabase, SUPABASE_ANON_KEY } from '@/services/supabase'
+import { pushNotifications } from '@/services/pushNotifications'
 import type { CreateOrderData } from '@/types'
 
 export function useUserOrders() {
   const { user } = useAuthStore()
+  const queryClient = useQueryClient()
+  
+  // Слушаем события обновления кэша
+  useEffect(() => {
+    const handleInvalidate = () => {
+      queryClient.invalidateQueries({ queryKey: ['orders'] })
+    }
+    
+    window.addEventListener('invalidateOrders', handleInvalidate)
+    return () => window.removeEventListener('invalidateOrders', handleInvalidate)
+  }, [queryClient])
   
   return useQuery({
     queryKey: ['orders', 'user', user?.id],
@@ -58,7 +72,10 @@ export function useAcceptOrder() {
   return useMutation({
     mutationFn: (orderId: string) => 
       ordersApi.acceptOrder(orderId, driver!.id),
-    onSuccess: () => {
+    onSuccess: (order) => {
+      console.log('🎯 ЗАКАЗ ПРИНЯТ!')
+      // Отправляем уведомление пользователю
+      pushNotifications.notifyUserStatusChange(order.user_id, order.id, 'accepted')
       queryClient.invalidateQueries({ queryKey: ['orders'] })
     },
   })
@@ -70,7 +87,10 @@ export function useUpdateOrderStatus() {
   return useMutation({
     mutationFn: ({ orderId, status }: { orderId: string; status: string }) =>
       ordersApi.updateOrderStatus(orderId, status),
-    onSuccess: () => {
+    onSuccess: (order, { status }) => {
+      console.log('🔄 СТАТУС ИЗМЕНЕН!', { status })
+      // Отправляем уведомление пользователю
+      pushNotifications.notifyUserStatusChange(order.user_id, order.id, status)
       queryClient.invalidateQueries({ queryKey: ['orders'] })
     },
   })
@@ -86,3 +106,6 @@ export function useCancelOrder() {
     },
   })
 }
+
+// Уведомления теперь отправляются автоматически через триггеры БД
+// Эта функция больше не используется, но оставлена для совместимости

@@ -4,6 +4,7 @@ import { useMutation } from '@tanstack/react-query'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
+import { PhoneInput } from '@/components/ui/PhoneInput'
 import { authApi } from '@/services/api'
 import { useAuthStore } from '@/stores/authStore'
 import { isValidPhone } from '@/utils/helpers'
@@ -76,21 +77,22 @@ export function UserAuth() {
           
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
-              <Input
+              <PhoneInput
                 label="Номер телефона"
-                type="tel"
-                placeholder="+7 (999) 123-45-67"
+                placeholder="(999) 123-45-67"
                 value={phone}
-                onChange={(e) => setPhone(e.target.value)}
+                onChange={setPhone}
                 error={errors.phone}
               />
               
               <Input
                 label="Ваше имя"
-                placeholder="Иван Иванов"
+                placeholder="Иван"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 error={errors.name}
+                minLength={undefined}
+                pattern={undefined}
               />
               
               <Button

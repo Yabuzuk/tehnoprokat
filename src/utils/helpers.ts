@@ -49,6 +49,7 @@ export function generateTimeSlots(): string[] {
 }
 
 export function isValidPhone(phone: string): boolean {
-  const phoneRegex = /^(\+7|7|8)?[\s\-]?\(?[489][0-9]{2}\)?[\s\-]?[0-9]{3}[\s\-]?[0-9]{2}[\s\-]?[0-9]{2}$/
-  return phoneRegex.test(phone.replace(/\s/g, ''))
+  // Проверяем, что телефон состоит из 11 цифр и начинается с 7
+  const digits = phone.replace(/\D/g, '')
+  return digits.length === 11 && digits.startsWith('7')
 }

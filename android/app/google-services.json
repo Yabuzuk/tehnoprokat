@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "642429030203",
+    "firebase_url": "https://newagent-c434a.firebaseio.com",
+    "project_id": "newagent-c434a",
+    "storage_bucket": "newagent-c434a.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:642429030203:android:d94cf95780a3494aa3711e",
+        "android_client_info": {
+          "package_name": "com.tehnoprokat.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "642429030203-s14cfbq6gkvi2rin0u92lu9hnqf9dg8u.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAH6yQWf32M41oLhscegD8HTvrGlbjgPRU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "642429030203-s14cfbq6gkvi2rin0u92lu9hnqf9dg8u.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

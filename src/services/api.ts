@@ -4,13 +4,20 @@ import type { User, Driver, Order, CreateOrderData, ServiceType } from '@/types'
 // Auth API
 export const authApi = {
   async loginUser(phone: string, name: string): Promise<User> {
+    console.log('Attempting to login user:', { phone, name })
+    
     const { data, error } = await supabase
       .from('users')
       .upsert({ phone, name }, { onConflict: 'phone' })
       .select()
       .single()
     
-    if (error) throw error
+    console.log('Supabase response:', { data, error })
+    
+    if (error) {
+      console.error('Supabase error:', error)
+      throw error
+    }
     return data
   },
 
@@ -45,13 +52,17 @@ export const ordersApi = {
       ? 1300 * orderData.quantity 
       : 4000
     
+    const orderToInsert = {
+      ...orderData,
+      price,
+      status: 'pending'
+    }
+    
+    console.log('Creating order:', orderToInsert)
+    
     const { data, error } = await supabase
       .from('orders')
-      .insert({
-        ...orderData,
-        price,
-        status: 'pending'
-      })
+      .insert(orderToInsert)
       .select(`
         *,
         user:users(*),
@@ -59,11 +70,18 @@ export const ordersApi = {
       `)
       .single()
     
-    if (error) throw error
+    console.log('Order creation response:', { data, error })
+    
+    if (error) {
+      console.error('Order creation error:', error)
+      throw error
+    }
     return data
   },
 
   async getUserOrders(userId: string): Promise<Order[]> {
+    console.log('Getting orders for user:', userId)
+    
     const { data, error } = await supabase
       .from('orders')
       .select(`
@@ -74,7 +92,12 @@ export const ordersApi = {
       .eq('user_id', userId)
       .order('created_at', { ascending: false })
     
-    if (error) throw error
+    console.log('User orders response:', { data, error, userId })
+    
+    if (error) {
+      console.error('Get user orders error:', error)
+      throw error
+    }
     return data || []
   },
 

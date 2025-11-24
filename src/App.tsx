@@ -1,6 +1,8 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
+import { HashRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { useAuthStore } from '@/stores/authStore'
+import { useNotifications } from '@/hooks/useNotifications'
+import { useEffect, useState } from 'react'
 
 // Pages
 import { RoleSelection } from '@/pages/RoleSelection'
@@ -12,6 +14,7 @@ import { CreateOrder } from '@/pages/user/CreateOrder'
 import { UserOrders } from '@/pages/user/Orders'
 import { DriverDashboard } from '@/pages/driver/Dashboard'
 import { AdminDashboard } from '@/pages/admin/Dashboard'
+// import { DebugInfo } from '@/components/DebugInfo'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -39,6 +42,35 @@ function ProtectedRoute({
 }
 
 function App() {
+  const { isAuthenticated, role } = useAuthStore()
+  const [isLoading, setIsLoading] = useState(true)
+  
+  // Инициализируем уведомления
+  useNotifications()
+
+  useEffect(() => {
+    // Автоматическое перенаправление при наличии сессии
+    if (isAuthenticated && role) {
+      const targetPath = `/${role}/dashboard`
+      if (window.location.hash === '#/' || !window.location.hash) {
+        window.location.replace(`#${targetPath}`)
+      }
+    }
+    setIsLoading(false)
+  }, [isAuthenticated, role])
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-2xl mb-2">💧</div>
+          <div className="text-lg font-semibold text-gray-900 dark:text-white">Водовозка</div>
+          <div className="text-sm text-gray-600 dark:text-gray-400 mt-2">Загрузка...</div>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <QueryClientProvider client={queryClient}>
       <Router>
@@ -99,6 +131,7 @@ function App() {
             {/* Fallback */}
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
+          {/* <DebugInfo /> */}
         </div>
       </Router>
     </QueryClientProvider>

@@ -10,12 +10,14 @@ import { Droplets, Trash2, Plus, History, LogOut, Truck } from 'lucide-react'
 export function UserDashboard() {
   const navigate = useNavigate()
   const { user, logout } = useAuthStore()
-  const { data: orders = [], isLoading } = useUserOrders()
+  const { data: orders = [], isLoading, error } = useUserOrders()
 
   const handleLogout = () => {
     logout()
     navigate('/')
   }
+
+
 
   const services = [
     {
@@ -127,7 +129,15 @@ export function UserDashboard() {
             </Button>
           </div>
 
-          {isLoading ? (
+          {error ? (
+            <Card>
+              <CardContent className="p-8 text-center">
+                <p className="text-red-500 dark:text-red-400">
+                  Ошибка загрузки заказов
+                </p>
+              </CardContent>
+            </Card>
+          ) : isLoading ? (
             <div className="space-y-4">
               {[...Array(3)].map((_, i) => (
                 <Card key={i}>

@@ -30,6 +30,9 @@ dist-ssr
 .env.test.local
 .env.production.local
 
+# Firebase credentials
+service-account-key.json
+
 # Build outputs
 build/
 out/

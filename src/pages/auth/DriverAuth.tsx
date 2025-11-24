@@ -4,6 +4,7 @@ import { useMutation } from '@tanstack/react-query'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
+import { PhoneInput } from '@/components/ui/PhoneInput'
 import { authApi } from '@/services/api'
 import { useAuthStore } from '@/stores/authStore'
 import { isValidPhone } from '@/utils/helpers'
@@ -118,12 +119,11 @@ export function DriverAuth() {
           
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
-              <Input
+              <PhoneInput
                 label="Номер телефона"
-                type="tel"
-                placeholder="+7 (999) 123-45-67"
+                placeholder="(999) 123-45-67"
                 value={formData.phone}
-                onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
+                onChange={(phone) => setFormData(prev => ({ ...prev, phone }))}
                 error={errors.phone}
               />
               

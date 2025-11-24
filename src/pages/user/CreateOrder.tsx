@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { useNotifications } from '@/hooks/useNotifications'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
+import { pushNotifications } from '@/services/pushNotifications'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { AddressInput } from '@/components/ui/AddressInput'
@@ -18,15 +18,23 @@ export function CreateOrder() {
   const navigate = useNavigate()
   const { setCurrentOrder } = useOrderStore()
   const createOrderMutation = useCreateOrder()
-  const { requestPermission, notifyOrderCreated } = useNotifications()
+  // Безопасные заглушки для уведомлений
+  const requestPermission = async () => true
+  const notifyOrderCreated = (type: string) => console.log(`Order created: ${type}`)
 
   useEffect(() => {
-    if (createOrderMutation.isSuccess) {
-      notifyOrderCreated(serviceType as string)
+    if (createOrderMutation.isSuccess && createOrderMutation.data) {
+      const order = createOrderMutation.data
+      // Отправляем уведомления водителям
+      pushNotifications.notifyDriversNewOrder(order.id, order.service_type, order.address)
       alert('Заказ успешно оформлен!')
       navigate('/user/dashboard')
     }
-  }, [createOrderMutation.isSuccess, navigate, notifyOrderCreated, serviceType])
+    if (createOrderMutation.isError) {
+      console.error('Ошибка создания заказа:', createOrderMutation.error)
+      alert('Ошибка при создании заказа. Попробуйте еще раз.')
+    }
+  }, [createOrderMutation.isSuccess, createOrderMutation.isError, createOrderMutation.error, createOrderMutation.data, navigate])
 
   const [formData, setFormData] = useState<CreateOrderData>({
     service_type: serviceType as ServiceType,
@@ -46,36 +54,46 @@ export function CreateOrder() {
     if (!service) {
       navigate('/user/dashboard')
     }
-    // Запрашиваем разрешение на уведомления
-    requestPermission()
-  }, [service, navigate, requestPermission])
+  }, [service, navigate])
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    const newErrors: Record<string, string> = {}
-    
-    if (!formData.address.trim()) {
-      newErrors.address = 'Введите адрес'
+    try {
+      console.log('Начало handleSubmit')
+      
+      const newErrors: Record<string, string> = {}
+      
+      if (!formData.address.trim()) {
+        newErrors.address = 'Введите адрес'
+      }
+      if (!formData.delivery_date) {
+        newErrors.delivery_date = 'Выберите дату'
+      }
+      if (!formData.delivery_time) {
+        newErrors.delivery_time = 'Выберите время'
+      }
+      if (formData.quantity < 1) {
+        newErrors.quantity = 'Количество должно быть больше 0'
+      }
+      
+      if (Object.keys(newErrors).length > 0) {
+        console.log('Ошибки валидации:', newErrors)
+        setErrors(newErrors)
+        return
+      }
+      
+      setErrors({})
+      console.log('Данные формы:', formData)
+      
+      // Отправляем заказ в базу данных
+      setCurrentOrder(formData)
+      console.log('Отправка заказа в Supabase:', formData)
+      createOrderMutation.mutate(formData)
+    } catch (error) {
+      console.error('Ошибка в handleSubmit:', error)
+      alert('Произошла ошибка. Попробуйте еще раз.')
     }
-    if (!formData.delivery_date) {
-      newErrors.delivery_date = 'Выберите дату'
-    }
-    if (!formData.delivery_time) {
-      newErrors.delivery_time = 'Выберите время'
-    }
-    if (formData.quantity < 1) {
-      newErrors.quantity = 'Количество должно быть больше 0'
-    }
-    
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors)
-      return
-    }
-    
-    setErrors({})
-    setCurrentOrder(formData)
-    createOrderMutation.mutate(formData)
   }
 
   const totalPrice = calculatePrice(formData.service_type, formData.quantity)

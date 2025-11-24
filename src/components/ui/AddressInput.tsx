@@ -66,40 +66,57 @@ export function AddressInput({ value, onChange, error, onMapClick }: AddressInpu
           type="button"
           variant="outline"
           onClick={async () => {
-            // Проверяем HTTPS
-            if (location.protocol !== 'https:' && location.hostname !== 'localhost') {
-              alert('Геолокация работает только по HTTPS')
-              onMapClick?.()
-              return
-            }
-            
-            if (navigator.geolocation) {
-              try {
-                navigator.geolocation.getCurrentPosition(
-                  (position) => {
-                    const coords = {
-                      lat: position.coords.latitude,
-                      lng: position.coords.longitude
-                    }
-                    onMapClick?.(coords)
-                  },
-                  (error) => {
-                    console.log('Ошибка геолокации:', error.message)
-                    alert('Не удалось определить местоположение')
-                    onMapClick?.()
-                  },
-                  {
+            try {
+              // Проверяем, есть ли Capacitor
+              if ((window as any).Capacitor) {
+                const { Geolocation } = await import('@capacitor/geolocation')
+                
+                // Запрашиваем разрешения
+                const permissions = await Geolocation.requestPermissions()
+                
+                if (permissions.location === 'granted') {
+                  const position = await Geolocation.getCurrentPosition({
                     enableHighAccuracy: true,
-                    timeout: 10000,
-                    maximumAge: 0
+                    timeout: 10000
+                  })
+                  
+                  const coords = {
+                    lat: position.coords.latitude,
+                    lng: position.coords.longitude
                   }
-                )
-              } catch (e) {
-                console.log('Ошибка проверки разрешений:', e)
-                onMapClick?.()
+                  onMapClick?.(coords)
+                } else {
+                  alert('Необходимо разрешить доступ к местоположению')
+                  onMapClick?.()
+                }
+              } else {
+                // Используем стандартный navigator.geolocation
+                if (navigator.geolocation) {
+                  navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                      const coords = {
+                        lat: position.coords.latitude,
+                        lng: position.coords.longitude
+                      }
+                      onMapClick?.(coords)
+                    },
+                    () => {
+                      alert('Не удалось определить местоположение')
+                      onMapClick?.()
+                    },
+                    {
+                      enableHighAccuracy: true,
+                      timeout: 10000,
+                      maximumAge: 0
+                    }
+                  )
+                } else {
+                  onMapClick?.()
+                }
               }
-            } else {
-              alert('Геолокация не поддерживается')
+            } catch (error) {
+              console.error('Ошибка геолокации:', error)
+              alert('Не удалось определить местоположение')
               onMapClick?.()
             }
           }}

@@ -43,7 +43,6 @@ export function DriverDashboard() {
               </h1>
             </div>
             <div className="flex items-center space-x-4">
-
               <Button
                 variant="ghost"
                 onClick={handleLogout}

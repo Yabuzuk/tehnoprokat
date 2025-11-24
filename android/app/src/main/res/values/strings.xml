@@ -1,0 +1,11 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Водовозка</string>
+    <string name="title_activity_main">Водовозка</string>
+    <string name="package_name">com.tehnoprokat.waterdelivery</string>
+    <string name="custom_url_scheme">com.tehnoprokat.waterdelivery</string>
+    
+    <!-- Push Notifications -->
+    <string name="default_notification_channel_id">default</string>
+    <string name="default_notification_channel_name">Default</string>
+</resources>

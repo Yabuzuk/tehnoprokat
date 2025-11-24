@@ -25,7 +25,8 @@ export function MapModal({ isOpen, onClose, onAddressSelect, initialCoordinates 
       const existingScript = document.querySelector('script[src*="api-maps.yandex.ru"]')
       if (!existingScript) {
         const script = document.createElement('script')
-        script.src = `https://api-maps.yandex.ru/2.1/?apikey=63c21778-deb0-4a95-bc2a-fb4d2dd46449&lang=ru_RU`
+        const apiKey = (import.meta as any).env.VITE_YANDEX_MAPS_API_KEY || '63c21778-deb0-4a95-bc2a-fb4d2dd46449'
+        script.src = `https://api-maps.yandex.ru/2.1/?apikey=${apiKey}&lang=ru_RU`
         script.onload = () => {
           window.ymaps.ready(initMap)
         }

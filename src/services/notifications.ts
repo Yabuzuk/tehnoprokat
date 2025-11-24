@@ -1,101 +1,168 @@
-// Сервис для работы с push-уведомлениями
+import { PushNotifications } from '@capacitor/push-notifications'
+import { LocalNotifications } from '@capacitor/local-notifications'
+import { Capacitor } from '@capacitor/core'
 
-export class NotificationService {
-  private static instance: NotificationService
-  private registration: ServiceWorkerRegistration | null = null
-  
-  static getInstance(): NotificationService {
-    if (!NotificationService.instance) {
-      NotificationService.instance = new NotificationService()
+export interface NotificationPayload {
+  title: string
+  body: string
+  data?: any
+}
+
+class NotificationService {
+  private isInitialized = false
+
+  async initialize() {
+    console.log('🚀 Инициализация уведомлений...', {
+      isNative: Capacitor.isNativePlatform(),
+      isInitialized: this.isInitialized
+    })
+    
+    if (!Capacitor.isNativePlatform()) {
+      console.log('⚠️ Не мобильная платформа')
+      return
     }
-    return NotificationService.instance
+    
+    if (this.isInitialized) {
+      console.log('🔄 Повторная регистрация для обновления тоCaена')
+      await PushNotifications.register()
+      return
+    }
+
+    try {
+      // Запрашиваем разрешение на уведомления
+      console.log('🔔 Запрос разрешений...')
+      const permission = await PushNotifications.requestPermissions()
+      console.log('🔔 Разрешения:', permission)
+      
+      if (permission.receive === 'granted') {
+        // Регистрируем устройство для push-уведомлений
+        console.log('📱 Регистрация устройства...')
+        await PushNotifications.register()
+        
+        // Удаляем старые слушатели
+        await PushNotifications.removeAllListeners()
+        
+        // Слушаем события
+        PushNotifications.addListener('registration', (token) => {
+          console.log('✅ Push registration success, token: ' + token.value)
+          this.saveToken(token.value)
+        })
+
+        PushNotifications.addListener('registrationError', (error) => {
+          console.error('❌ Error on registration: ' + JSON.stringify(error))
+        })
+
+        PushNotifications.addListener('pushNotificationReceived', (notification) => {
+          console.log('Push notification received: ', notification)
+          this.handleNotificationReceived(notification)
+        })
+
+        PushNotifications.addListener('pushNotificationActionPerformed', (notification) => {
+          console.log('Push notification action performed', notification)
+          this.handleNotificationAction(notification)
+        })
+
+        this.isInitialized = true
+      }
+    } catch (error) {
+      console.error('Error initializing push notifications:', error)
+    }
   }
 
-  // Инициализация Service Worker
-  async init() {
-    if ('serviceWorker' in navigator) {
-      try {
-        this.registration = await navigator.serviceWorker.register('/tehnoprokat/sw.js')
-        console.log('Service Worker зарегистрирован')
-      } catch (error) {
-        console.error('Ошибка регистрации Service Worker:', error)
+  private async saveToken(token: string) {
+    // Сохраняем токен в localStorage
+    localStorage.setItem('push_token', token)
+    console.log('💾 Сохранение токена:', token.substring(0, 20) + '...')
+    
+    // Отправляем сообщение для сохранения токена
+    window.dispatchEvent(new CustomEvent('pushTokenReceived', { 
+      detail: { token } 
+    }))
+    
+    console.log('📤 Токен отправлен для сохранения')
+  }
+
+  private handleNotificationReceived(notification: any) {
+    // Показываем локальное уведомление если приложение активно
+    if (notification.title && notification.body) {
+      this.showLocalNotification(notification.title, notification.body)
+    }
+  }
+
+  private handleNotificationAction(notification: any) {
+    // Обрабатываем нажатие на уведомление
+    const data = notification.notification.data
+    if (data?.route) {
+      // Перенаправляем на нужную страницу
+      window.location.hash = data.route
+    }
+  }
+
+  private async showMobileNotification(payload: NotificationPayload) {
+    try {
+      // Запрашиваем разрешения на локальные уведомления
+      const permission = await LocalNotifications.requestPermissions()
+      
+      if (permission.display === 'granted') {
+        // Показываем локальное уведомление
+        await LocalNotifications.schedule({
+          notifications: [
+            {
+              title: payload.title,
+              body: payload.body,
+              id: Math.floor(Math.random() * 100000),
+              schedule: { at: new Date(Date.now() + 1000) }, // Через 1 секунду
+              sound: 'default',
+              attachments: undefined,
+              actionTypeId: '',
+              extra: payload.data
+            }
+          ]
+        })
+        console.log('✅ Локальное уведомление запланировано')
+      } else {
+        console.log('⚠️ Нет разрешения на локальные уведомления')
+      }
+    } catch (error) {
+      console.error('❌ Ошибка показа локального уведомления:', error)
+    }
+  }
+
+  private showLocalNotification(title: string, body: string) {
+    // Показываем браузерное уведомление для веб-версии
+    if ('Notification' in window && Notification.permission === 'granted') {
+      new Notification(title, { body })
+    }
+  }
+
+  // Локальные уведомления для тестирования
+  async showTestNotification(payload: NotificationPayload) {
+    console.log('📢 Показ уведомления:', payload)
+    
+    if (Capacitor.isNativePlatform()) {
+      // На мобильном показываем через Capacitor
+      console.log('📱 Mobile notification:', payload)
+      
+      // Показываем локальное уведомление
+      await this.showMobileNotification(payload)
+    } else {
+      // В браузере показываем обычное уведомление
+      if ('Notification' in window) {
+        if (Notification.permission === 'granted') {
+          new Notification(payload.title, { body: payload.body })
+        } else if (Notification.permission !== 'denied') {
+          const permission = await Notification.requestPermission()
+          if (permission === 'granted') {
+            new Notification(payload.title, { body: payload.body })
+          }
+        }
       }
     }
   }
 
-  // Запрос разрешения на уведомления
-  async requestPermission(): Promise<boolean> {
-    if (!('Notification' in window)) {
-      console.log('Браузер не поддерживает уведомления')
-      return false
-    }
-
-    await this.init()
-    const permission = await Notification.requestPermission()
-    return permission === 'granted'
-  }
-
-  // Отправка локального уведомления
-  showNotification(title: string, options?: NotificationOptions) {
-    if (Notification.permission === 'granted') {
-      const notification = new Notification(title, {
-        icon: '/tehnoprokat/water.png',
-        badge: '/tehnoprokat/water.png',
-        ...options
-      })
-
-      // Автозакрытие через 5 секунд
-      setTimeout(() => notification.close(), 5000)
-      
-      return notification
-    }
-  }
-
-  // Уведомления для разных событий
-  notifyOrderCreated(orderType: string) {
-    this.showNotification('Заказ создан!', {
-      body: `Ваш заказ на ${orderType === 'water_delivery' ? 'доставку воды' : 'откачку септика'} принят в обработку`,
-      tag: 'order-created'
-    })
-  }
-
-  notifyOrderAccepted(driverName: string) {
-    this.showNotification('Заказ принят водителем!', {
-      body: `Водитель ${driverName} принял ваш заказ`,
-      tag: 'order-accepted'
-    })
-  }
-
-  notifyOrderCompleted() {
-    this.showNotification('Заказ выполнен!', {
-      body: 'Ваш заказ успешно выполнен. Спасибо за использование нашего сервиса!',
-      tag: 'order-completed'
-    })
-  }
-
-  notifyNewOrder(orderType: string, address: string) {
-    this.showNotification('Новый заказ!', {
-      body: `${orderType === 'water_delivery' ? 'Доставка воды' : 'Откачка септика'} по адресу: ${address}`,
-      tag: 'new-order'
-    })
-  }
-
-  // Отправка фонового уведомления через Service Worker
-  async sendBackgroundNotification(title: string, body: string, tag?: string) {
-    if (this.registration && 'showNotification' in this.registration) {
-      await this.registration.showNotification(title, {
-        body,
-        icon: '/tehnoprokat/water.png',
-        badge: '/tehnoprokat/water.png',
-        tag: tag || 'background',
-        requireInteraction: true,
-        data: { url: '/tehnoprokat/' }
-      })
-    }
+  getToken(): string | null {
+    return localStorage.getItem('push_token')
   }
 }
 
-export const notificationService = NotificationService.getInstance()
-
-// Автоинициализация
-notificationService.init()
+export const notificationService = new NotificationService()

@@ -1,10 +1,19 @@
 import { useNavigate } from 'react-router-dom'
+import { useEffect } from 'react'
 import { Card, CardContent } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Truck, User, Shield } from 'lucide-react'
+import { useAuthStore } from '@/stores/authStore'
 
 export function RoleSelection() {
   const navigate = useNavigate()
+  const { isAuthenticated, role } = useAuthStore()
+
+  useEffect(() => {
+    if (isAuthenticated && role) {
+      navigate(`/${role}/dashboard`, { replace: true })
+    }
+  }, [isAuthenticated, role, navigate])
 
   const roles = [
     {

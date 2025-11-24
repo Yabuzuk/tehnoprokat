@@ -168,8 +168,8 @@ export function AdminDashboard() {
             {drivers.map((driver) => (
               <Card key={driver.id}>
                 <CardContent className="p-6">
-                  <div className="flex justify-between items-start">
-                    <div className="flex-1">
+                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
+                    <div className="flex-1 min-w-0">
                       <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                         {driver.full_name}
                       </h3>
@@ -189,17 +189,18 @@ export function AdminDashboard() {
                       </p>
                     </div>
                     
-                    <div className="flex items-center space-x-3">
-                      <span className={`px-3 py-1 rounded-full text-sm font-medium text-white ${DRIVER_STATUSES[driver.status].color}`}>
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:min-w-fit">
+                      <span className={`px-3 py-1 rounded-full text-sm font-medium text-white whitespace-nowrap ${DRIVER_STATUSES[driver.status].color}`}>
                         {DRIVER_STATUSES[driver.status].name}
                       </span>
                       
                       {driver.status === 'pending' && (
-                        <div className="flex space-x-2">
+                        <div className="flex flex-col sm:flex-row gap-2">
                           <Button
                             size="sm"
                             onClick={() => handleDriverAction(driver.id, 'active')}
                             isLoading={updateDriverMutation.isPending}
+                            className="whitespace-nowrap"
                           >
                             <Check className="h-4 w-4 mr-1" />
                             Активировать
@@ -209,6 +210,7 @@ export function AdminDashboard() {
                             variant="danger"
                             onClick={() => handleDriverAction(driver.id, 'blocked')}
                             isLoading={updateDriverMutation.isPending}
+                            className="whitespace-nowrap"
                           >
                             <X className="h-4 w-4 mr-1" />
                             Отклонить
@@ -222,6 +224,7 @@ export function AdminDashboard() {
                           variant="outline"
                           onClick={() => handleDriverAction(driver.id, 'blocked')}
                           isLoading={updateDriverMutation.isPending}
+                          className="whitespace-nowrap"
                         >
                           Заблокировать
                         </Button>
@@ -232,6 +235,7 @@ export function AdminDashboard() {
                           size="sm"
                           onClick={() => handleDriverAction(driver.id, 'active')}
                           isLoading={updateDriverMutation.isPending}
+                          className="whitespace-nowrap"
                         >
                           Разблокировать
                         </Button>
